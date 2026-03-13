@@ -6,9 +6,10 @@ and tracks user annotations via a git repo in /tmp. returns the user's
 annotations (additions/edits) as a git diff on stdout.
 
 usage:
-    git-review.py              # auto-detect: uncommitted or branch vs default
-    git-review.py <base>       # diff against specific ref (branch, tag, HEAD~3)
-    git-review.py --test       # run embedded tests
+    git-review.py                          # auto-detect: uncommitted or branch vs default
+    git-review.py <base>                   # diff against specific ref (branch, tag, HEAD~3)
+    git-review.py <base> --branch <name>   # diff branch against base (without checkout)
+    git-review.py --test                   # run embedded tests
 
 auto-detect logic:
     1. if uncommitted changes exist (staged + unstaged) → use those
@@ -194,9 +195,9 @@ def generate_clean_diff(diff_args: list[str]) -> str:
     return "\n".join(output) + "\n"
 
 
-def make_header(diff_args: list[str], mode: str) -> str:
+def make_header(diff_args: list[str], mode: str, branch_override: str | None = None) -> str:
     """generate a header line for the review file."""
-    branch = get_current_branch()
+    branch = branch_override if branch_override else get_current_branch()
     parts = [f"Branch: {branch}"]
 
     if mode == "uncommitted":
@@ -208,8 +209,15 @@ def make_header(diff_args: list[str], mode: str) -> str:
         if untracked:
             parts.append(f"Untracked: {untracked}")
     else:
-        base = diff_args[0].split("...")[0] if diff_args else "?"
-        commit_count = git("rev-list", "--count", f"{base}..HEAD") if "..." in diff_args[0] else "?"
+        # extract base and target from diff_args
+        arg = diff_args[0] if diff_args else ""
+        if "..." in arg:
+            base, target = arg.split("...", 1)
+        elif ".." in arg:
+            base, target = arg.split("..", 1)
+        else:
+            base, target = arg, "HEAD"
+        commit_count = git("rev-list", "--count", f"{base}..{target}")
         file_count = len(git("diff", "--name-only", *diff_args).splitlines())
         parts.append(f"Base: {base}")
         parts.append(f"Commits: {commit_count}")
@@ -218,10 +226,10 @@ def make_header(diff_args: list[str], mode: str) -> str:
     return " | ".join(parts)
 
 
-def get_review_dir() -> Path:
+def get_review_dir(branch_override: str | None = None) -> Path:
     """get the review directory path in /tmp."""
     project = get_project_name()
-    branch = get_current_branch()
+    branch = branch_override if branch_override else get_current_branch()
     # sanitize for filesystem
     safe_name = re.sub(r"[^a-zA-Z0-9_.-]", "-", f"{project}-{branch}")
     return Path(tempfile.gettempdir()) / f"git-review-{safe_name}"
@@ -310,7 +318,7 @@ def get_annotations(review_dir: Path) -> str:
     return git("diff", cwd=str(review_dir))
 
 
-def run_review(base_ref: str | None = None) -> None:
+def run_review(base_ref: str | None = None, branch: str | None = None) -> None:
     """main review flow: generate diff, open editor, return annotations."""
     if not git_ok("rev-parse", "--is-inside-work-tree"):
         print("error: not inside a git repository", file=sys.stderr)
@@ -319,10 +327,11 @@ def run_review(base_ref: str | None = None) -> None:
     # determine diff mode and args
     if base_ref:
         # explicit base provided
+        target = branch if branch else "HEAD"
         if "..." in base_ref or ".." in base_ref:
             diff_args = [base_ref]
         else:
-            diff_args = [f"{base_ref}...HEAD"]
+            diff_args = [f"{base_ref}...{target}"]
         mode = "branch"
     elif has_uncommitted_changes():
         diff_args = ["HEAD"]  # diff vs HEAD to include both staged and unstaged
@@ -347,7 +356,7 @@ def run_review(base_ref: str | None = None) -> None:
         sys.exit(0)
 
     # add header
-    header = make_header(diff_args, mode)
+    header = make_header(diff_args, mode, branch_override=branch)
     parts = [f"# {header}"]
     if clean_diff:
         parts.append(clean_diff)
@@ -356,7 +365,7 @@ def run_review(base_ref: str | None = None) -> None:
     content = "\n\n".join(parts) + "\n"
 
     # set up review repo and open editor
-    review_dir = get_review_dir()
+    review_dir = get_review_dir(branch_override=branch)
     setup_review_repo(review_dir, content)
 
     review_file = review_dir / "review.diff"
@@ -376,6 +385,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="interactive git diff annotation tool")
     parser.add_argument("--test", action="store_true", help="run embedded tests")
     parser.add_argument("--clean", action="store_true", help="remove review repo from /tmp")
+    parser.add_argument("--branch", help="branch to review (when not checked out on it)")
     parser.add_argument("base_ref", nargs="?", help="base ref to diff against (branch, tag, commit)")
     args = parser.parse_args()
 
@@ -392,7 +402,7 @@ def main() -> None:
             print("no review repo to clean", file=sys.stderr)
         return
 
-    run_review(args.base_ref)
+    run_review(args.base_ref, branch=args.branch)
 
 
 def run_tests() -> None:
