@@ -101,9 +101,11 @@ def get_diff(original: str, edited: str) -> str:
     return "".join(diff)
 
 
-def open_editor(filepath: Path) -> int:
+def open_editor(filepath: Path, target_window: bool = True) -> int:
     """open file in $EDITOR via tmux popup, kitty overlay, or wezterm split-pane, blocking until editor closes.
-    tries tmux first (if $TMUX is set), then kitty, then wezterm. returns non-zero if none is available."""
+    tries tmux first (if $TMUX is set), then kitty, then wezterm. returns non-zero if none is available.
+    when target_window is True (hook mode), targets the kitty window from KITTY_WINDOW_ID.
+    when False (file mode), opens in the currently focused window."""
     editor = os.environ.get("EDITOR", "micro")
 
     # tmux: display-popup -E blocks until the command exits, no sentinel needed
@@ -128,10 +130,11 @@ def open_editor(filepath: Path) -> int:
         wrapper = f'{shlex.quote(editor)} {shlex.quote(str(filepath))}; touch {shlex.quote(str(sentinel))}'
         cmd = ["kitty", "@", "--to", kitty_sock, "launch", "--type=overlay",
                f"--title=Plan Review: {filepath.name}"]
-        # target the kitty window where claude is running, not the active one
-        kitty_wid = os.environ.get("KITTY_WINDOW_ID")
-        if kitty_wid:
-            cmd.extend(["--match", f"id:{kitty_wid}"])
+        # in hook mode, target claude's window; in file mode, use focused window
+        if target_window:
+            kitty_wid = os.environ.get("KITTY_WINDOW_ID")
+            if kitty_wid:
+                cmd.extend(["--match", f"id:{kitty_wid}"])
         cmd.extend(["sh", "-c", wrapper])
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         while not sentinel.exists():
@@ -174,7 +177,7 @@ def run_file_mode(plan_file: Path) -> None:
         tmp_path = Path(tmp.name)
 
     try:
-        if open_editor(tmp_path) != 0:
+        if open_editor(tmp_path, target_window=False) != 0:
             print("error: no overlay terminal available (requires tmux, kitty, or wezterm)", file=sys.stderr)
             sys.exit(1)
 
