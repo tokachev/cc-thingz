@@ -143,7 +143,7 @@ def open_editor(filepath: Path, target_window: bool = True) -> int:
         if target_window:
             kitty_wid = os.environ.get("KITTY_WINDOW_ID")
             if kitty_wid:
-                cmd.extend(["--match", f"id:{kitty_wid}"])
+                cmd.extend(["--match", f"window_id:{kitty_wid}"])
         cmd.extend(["sh", "-c", wrapper])
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         while not sentinel.exists():

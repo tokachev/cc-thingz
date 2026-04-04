@@ -48,7 +48,7 @@ if [ -n "$KITTY_SOCK" ] && command -v kitty >/dev/null 2>&1; then
 
     KITTY_ARGS=(kitty @ --to "$KITTY_SOCK" launch --type=overlay --title="$OVERLAY_TITLE")
     if [ -n "${KITTY_WINDOW_ID:-}" ]; then
-        KITTY_ARGS+=(--match "id:${KITTY_WINDOW_ID}")
+        KITTY_ARGS+=(--match "window_id:${KITTY_WINDOW_ID}")
     fi
     KITTY_ARGS+=(sh -c "$REVDIFF_CMD; touch '$SENTINEL'")
 
