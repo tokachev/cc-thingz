@@ -105,6 +105,9 @@ Load reference files as needed during investigation:
 
 - **references/patterns.md** - common root cause patterns by category (configuration, race conditions, resource exhaustion, integration failures, build/deployment issues)
 - **references/techniques.md** - investigation techniques with command examples (error analysis, code investigation, dependency analysis, environment investigation)
+- **references/data-engineering.md** - data-engineering-specific patterns (schema drift, late data, idempotency, partition pruning, dbt incremental, small files, consumer lag, data skew, lineage/contract issues) with DE investigation commands (dbt, Airflow, Kafka, Spark, Parquet/Iceberg/Delta, warehouse INFORMATION_SCHEMA)
+
+When the issue involves pipelines, warehouses, dbt, Airflow, Kafka, Spark, data quality, dashboards, freshness, row counts, or lineage, load `references/data-engineering.md` before applying the 5-Why analysis. Symptoms like "dashboard numbers are wrong", "pipeline stale", "counts off", "duplicates in table", or "job succeeded but no data" are DE-shaped even when the word "data" isn't used.
 
 ## Best Practices
 

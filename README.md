@@ -299,7 +299,7 @@ Analytical thinking tools for objective analysis.
 
 Use cases: architecture decisions, bug analysis, performance claims, refactoring safety, code review.
 
-**root-cause-investigator** — applies 5-Why methodology to drill from symptoms to fundamental root causes. Structures investigation through progressive depth: surface cause → process issues → system problems → design issues → root cause. Includes reference materials for common patterns (race conditions, resource exhaustion, integration failures) and investigation techniques.
+**root-cause-investigator** — applies 5-Why methodology to drill from symptoms to fundamental root causes. Structures investigation through progressive depth: surface cause → process issues → system problems → design issues → root cause. Includes reference materials for common patterns (race conditions, resource exhaustion, integration failures), investigation techniques, and data-engineering-specific patterns (schema drift, late data, idempotency, dbt incremental, partition pruning, consumer lag, data skew, lineage/contract issues).
 
 ### skill-eval
 
