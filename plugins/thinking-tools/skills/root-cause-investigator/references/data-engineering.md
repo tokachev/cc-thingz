@@ -104,8 +104,9 @@ Patterns specific to ETL/ELT pipelines, data warehouses, streaming systems, and 
 
 ### At-Least-Once Duplicates
 - **Symptoms**: Same event processed twice after restart or rebalance
-- **Investigation**: Check offset commit timing vs side-effect timing; look for processing before commit
-- **Root causes**: Auto-commit before sink ack; rebalance during in-flight batch; sink not idempotent and no exactly-once sink connector
+- **Investigation**: Check ordering of sink-write vs offset-commit; inspect rebalance logs around restart; look for in-flight batches at shutdown; check whether sink is idempotent
+- **Root causes**: Sink write succeeded but offset commit didn't (process crash, rebalance, or `auto.commit.interval.ms` hadn't fired) → message redelivered on resume; rebalance reassigns partition mid-batch and new owner re-reads from last committed offset; sink not idempotent and no exactly-once / transactional sink connector
+- **Note on direction**: Committing offset *before* sink ack causes the *opposite* problem — data loss, not duplicates (offset advances, then crash loses the unwritten record). Duplicates come from committing *after* (or failing to commit) the side effect.
 
 ### Watermark Stalled
 - **Symptoms**: Windowed aggregations never fire; output frozen
