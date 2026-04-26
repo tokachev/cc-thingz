@@ -1,6 +1,16 @@
 #!/bin/bash
-# stage files and commit with a message
-# usage: stage-and-commit.sh <message> <file1> [file2 ...]
+# stage files only — DO NOT commit
+#
+# This is a fork-modified version of the upstream planning plugin script.
+# Upstream auto-commits after each task; this fork only stages changes via
+# `git add` and leaves all commit decisions to the user. Stage accumulates
+# across tasks within /planning:exec — the user can split or squash later
+# (e.g. `git reset HEAD <file>` then manual commits).
+#
+# The first argument (commit message) is accepted for backward compatibility
+# with callers that still pass one, but it is ignored — no commit is created.
+#
+# usage: stage-and-commit.sh <ignored-message> <file1> [file2 ...]
 # VCS-aware: dispatches to git or hg based on detect-vcs.sh
 
 set -e
@@ -14,19 +24,16 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 vcs=$(bash "$SCRIPT_DIR/detect-vcs.sh")
 
 do_git() {
-    local msg="$1"
-    shift
+    shift # drop ignored message
     git add -- "$@"
-    git commit -m "$msg"
 }
 
 do_hg() {
-    # -A marks untracked files as added and missing files as removed within the
-    # commit selection — parity with 'git add -- <files> && git commit'. Without
-    # -A, committing a new untracked file aborts with 'file not tracked'.
-    local msg="$1"
-    shift
-    hg commit -A -m "$msg" -- "$@"
+    # hg has no staging area; `hg add` only registers untracked files.
+    # Tracked files are picked up by the next commit automatically. Best-effort:
+    # swallow "already tracked" warnings so the script stays idempotent.
+    shift # drop ignored message
+    hg add -- "$@" 2>/dev/null || true
 }
 
 case "$vcs" in

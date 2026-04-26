@@ -2,6 +2,8 @@
 
 The planning plugin has three components: make (plan creation), exec (autonomous execution), and plan-review (quality review agent).
 
+**Fork note (no-autocommit).** This fork never auto-commits. `make` leaves the plan file in the working tree (not staged, not committed). `exec` stages task and fixer changes via `git add` after each task/fix, but never runs `git commit` — staged changes accumulate across tasks, and the user decides when and how to commit (e.g. one bundle vs. per-task via `git reset HEAD <file>` and manual commits). The finalize phase (rebase + squash commits) is permanently skipped.
+
 ## Make — `/planning:make`
 
 ### Triggers
@@ -39,9 +41,9 @@ The planning plugin has three components: make (plan creation), exec (autonomous
 1. Resolves plan file (from argument or picks from `docs/plans/`)
 2. Asks about worktree isolation (worktree vs current directory)
 3. Creates a feature branch
-4. Executes tasks sequentially — one subagent per task, commits after each
+4. Executes tasks sequentially — one subagent per task, stages changes via `git add` after each (no commit)
 5. Runs multi-phase review: comprehensive (iteration 1) then critical re-check loop → code smells → external (codex) → critical-only
-6. Optional finalize: rebase and squash commits
+6. Finalize phase (rebase + squash) is always skipped in this fork
 
 ### Configuration
 Set via `userConfig` in plugin.json (prompted at install):
@@ -52,7 +54,7 @@ Set via `userConfig` in plugin.json (prompted at install):
 | `task_retries` | `1` | retries for failed tasks |
 | `review_iterations` | `5` | max fix-and-recheck cycles |
 | `external_review_iterations` | `10` | max external review iterations |
-| `finalize_enabled` | `true` | run rebase + squash phase |
+| `finalize_enabled` | `false` | ignored in this fork — finalize is permanently disabled |
 | `plans_dir` | `docs/plans` | directory for plan files |
 
 ### Customization

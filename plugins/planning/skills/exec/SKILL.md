@@ -74,7 +74,7 @@ Then add review tasks:
 - `TaskCreate(subject="Review phase 2: code smells", description="smells agent + fixer", activeForm="Running smells review...")`
 - `TaskCreate(subject="Review phase 3: codex external", description="adversarial codex/claude review loop", activeForm="Running codex review...")`
 - `TaskCreate(subject="Review phase 4: critical only", description="2 review agents + fixer", activeForm="Running review phase 4...")`
-- `TaskCreate(subject="Finalize", description="rebase, clean up commits, verify", activeForm="Finalizing...")`
+- `TaskCreate(subject="Finalize", description="always skipped in this fork — no commits to rebase or squash", activeForm="Finalizing...")`
 
 Update tasks as you go: `TaskUpdate(taskId, status="in_progress")` when starting, `TaskUpdate(taskId, status="completed")` when done.
 
@@ -190,7 +190,7 @@ Loop up to `external_review_iterations` times (userConfig, default: 10):
 
 4. **Report codex findings to user** — show a compact list (one line per finding).
 
-5. **Spawn a fixer agent** — same as other review phases. Resolve `prompts/fixer.md`, pass codex output as FINDINGS_LIST. Fixer verifies, fixes, commits, reports FIXES.
+5. **Spawn a fixer agent** — same as other review phases. Resolve `prompts/fixer.md`, pass codex output as FINDINGS_LIST. Fixer verifies, fixes, stages (no commit in this fork), reports FIXES.
 
 6. **Report fixer results to user** — show FIXES section. Log to progress file. Loop back to step 1.
 
@@ -204,17 +204,9 @@ Same structure as step 7 but with `REVIEW_PHASE` set to `critical`. Resolve `pro
 
 ### Step 11. Finalize
 
-**hg skip**: Detect VCS with `vcs=$(bash ${CLAUDE_PLUGIN_ROOT}/skills/exec/scripts/detect-vcs.sh)`. If `vcs` is `hg`, skip this entire step. Report to user: "hg detected — skipping finalize (git-only). Override `prompts/finalizer.md` via `.claude/exec-plan/` to enable hg-native finalize." Note that `DEFAULT_BRANCH` substitutes as whatever detect-branch.sh returned — `remote/master` (or `remote/main`/`remote/trunk`) in modern-Mercurial repos that expose remote-tracking refs, `default` in repos that use the traditional named-branch convention — so any `git rebase origin/DEFAULT_BRANCH` in the bundled template must be replaced with the hg equivalent (e.g. `hg rebase -d remote/master`, or `hg rebase -d default` in the named-branch case) in the override. Proceed directly to step 12.
+**Always skipped in this fork.** This fork stages changes via `git add` and never creates commits, so there is nothing for the finalize phase (rebase + squash commits) to operate on. Report to user: "--- Finalize: skipped (no-autocommit fork — no commits to rebase or squash) ---" and proceed directly to step 12.
 
-Check `finalize_enabled` userConfig (default: true). If false, skip this step.
-
-After all reviews pass, rebase and clean up commits.
-
-Report to user: "--- Finalize: rebase and clean up commits ---"
-
-Spawn one Agent tool call with `mode: "bypassPermissions"`, `subagent_type: "general-purpose"`, and the prompt from `prompts/finalizer.md`. Replace `DEFAULT_BRANCH`, `PLAN_FILE_PATH`, and `PROGRESS_FILE_PATH`.
-
-This is best-effort — if rebase fails, report the issue but don't block completion.
+The `finalize_enabled` userConfig still exists for compatibility but its default is `false` and the value is ignored — the step is unconditionally skipped regardless of configuration.
 
 ### Step 12. Completion
 

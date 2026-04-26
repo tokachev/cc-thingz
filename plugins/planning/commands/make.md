@@ -295,8 +295,8 @@ then use AskUserQuestion:
     "options": [
       {"label": "Interactive review", "description": "Open plan in editor for manual annotation and feedback loop"},
       {"label": "Auto review", "description": "Launch AI plan-review agent for automated analysis"},
-      {"label": "Implement", "description": "Commit plan and start implementing"},
-      {"label": "Done", "description": "Commit plan, no further action"}
+      {"label": "Implement", "description": "Start implementing"},
+      {"label": "Done", "description": "No further action"}
     ],
     "multiSelect": false
   }]
@@ -325,7 +325,7 @@ then use AskUserQuestion:
     4. repeat until no diff output (user closed editor without changes)
   when the annotation loop completes, ask again with the remaining options (minus "Interactive review")
 - **Auto review**: launch plan-review agent (Task tool with subagent_type=plan-review). After review completes, ask again with the same options (minus "Auto review")
-- **Implement**: commit plan with message like "docs: add <topic> implementation plan", then ask implementation mode:
+- **Implement**: leave the plan file in the working tree (do NOT stage or commit it — this fork leaves all VCS decisions to the user), then ask implementation mode:
   ```json
   {
     "questions": [{
@@ -341,7 +341,7 @@ then use AskUserQuestion:
   ```
   - **Interactive**: begin implementing task 1 interactively in this session. Use TodoWrite tool to track progress and mark todos completed immediately (do not batch)
   - **Autonomous**: invoke `/planning:exec <plan-file-path>` for autonomous execution with multi-phase review
-- **Done**: commit plan with message like "docs: add <topic> implementation plan", stop
+- **Done**: leave the plan file in the working tree (do NOT stage or commit it — this fork leaves all VCS decisions to the user), stop
 
 ## execution enforcement
 

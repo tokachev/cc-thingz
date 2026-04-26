@@ -1,7 +1,7 @@
 {
   "name": "planning",
-  "description": "Structured implementation planning, interactive annotation review, and autonomous plan execution",
-  "version": "3.6.0",
+  "description": "Structured implementation planning, interactive annotation review, and autonomous plan execution. Fork: stages changes via `git add` and never auto-commits — all VCS decisions stay with the user.",
+  "version": "3.6.1-no-autocommit",
   "author": {
     "name": "Umputun"
   },
@@ -36,8 +36,8 @@
     "finalize_enabled": {
       "title": "Enable finalize",
       "type": "boolean",
-      "description": "Whether to run the finalize phase (rebase and squash commits).",
-      "default": true
+      "description": "Always skipped in this fork (no commits exist to rebase or squash). Kept for compatibility; the value is ignored.",
+      "default": false
     },
     "plans_dir": {
       "title": "Plans directory",

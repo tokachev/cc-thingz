@@ -26,10 +26,11 @@ STEP 2 - VALIDATE:
 STEP 3 - COMPLETE (after validation passes):
 - Edit PLAN_FILE_PATH and change [ ] to [x] for each checkbox you implemented in the current Task section
 - If Task sections are complete but Success criteria, Overview, or Context has [ ] items that the implementation satisfies, mark them [x] too
-- Commit all changes using the script: bash ${CLAUDE_PLUGIN_ROOT}/skills/exec/scripts/stage-and-commit.sh "feat: <brief task description>" file1 file2 ...
-  List all changed files explicitly (source files, test files, plan file)
+- Stage all changes using the script (this fork stages only — it does NOT commit): bash ${CLAUDE_PLUGIN_ROOT}/skills/exec/scripts/stage-and-commit.sh "feat: <brief task description>" file1 file2 ...
+  List all changed files explicitly (source files, test files, plan file). The message argument is ignored by the script but kept for backward compatibility.
+  Do NOT run `git commit` yourself. Leave staged changes for the user to commit when they choose.
 
-STEP 4 - LOG PROGRESS (after commit):
+STEP 4 - LOG PROGRESS (after staging):
 Log a header line: bash ${CLAUDE_PLUGIN_ROOT}/skills/exec/scripts/append-progress.sh PROGRESS_FILE_PATH "task N: <title>"
 Then log the details using echo piped to the script:
 echo "- modified: <files>
@@ -42,5 +43,5 @@ STOP after logging progress.
 
 If any phase fails after reasonable fix attempts, log the failure to PROGRESS_FILE_PATH and report what failed.
 
-ONE task section per run. After commit and progress log, STOP.
+ONE task section per run. After staging and progress log, STOP.
 ```
