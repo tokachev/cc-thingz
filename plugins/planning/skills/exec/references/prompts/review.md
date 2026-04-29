@@ -25,7 +25,9 @@ Run `git diff DEFAULT_BRANCH...HEAD` to see all changes. Read the actual source 
 
 The plan file at PLAN_FILE_PATH describes the goal and requirements — use it to understand what the code is supposed to do.
 
-Read the progress file at PROGRESS_FILE_PATH for context on previous review iterations and fixes. Re-evaluate all findings independently — previous fixes may be incomplete or wrong, and previously dismissed issues may be real."
+Read the progress file at PROGRESS_FILE_PATH for context on previous review iterations and fixes. Re-evaluate all findings independently — previous fixes may be incomplete or wrong, and previously dismissed issues may be real.
+
+When running shell verification: use absolute paths (/tmp/claude/...), not $TMPDIR or other shell variables. Run pipeline stages as separate Bash calls instead of one compound &&-chain. This avoids permission prompts that block bypassPermissions mode."
 
 Launch all 5 in parallel — send ALL 5 Agent tool calls in a SINGLE message. Use `mode: "bypassPermissions"`, `subagent_type: "general-purpose"` for each.
 

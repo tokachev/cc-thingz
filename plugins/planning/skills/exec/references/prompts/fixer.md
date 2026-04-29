@@ -11,6 +11,9 @@ Progress file: PROGRESS_FILE_PATH (read it for context on what previous iteratio
 FINDINGS:
 FINDINGS_LIST
 
+SHELL VERIFICATION RULES:
+When running shell verification: use absolute paths (/tmp/claude/...), not $TMPDIR or other shell variables. Run pipeline stages as separate Bash calls instead of one compound &&-chain. This avoids permission prompts that block bypassPermissions mode.
+
 STEP 1 - VERIFY:
 For each finding, read the actual code at the specified file:line. Check 20-30 lines of context. Classify as:
 - CONFIRMED: real issue, fix it

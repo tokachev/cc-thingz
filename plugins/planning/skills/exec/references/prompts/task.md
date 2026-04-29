@@ -14,6 +14,9 @@ Do NOT continue to the next section.
 
 USER_RULES
 
+SHELL VERIFICATION RULES:
+When running shell verification: use absolute paths (/tmp/claude/...), not $TMPDIR or other shell variables. Run pipeline stages as separate Bash calls instead of one compound &&-chain. This avoids permission prompts that block bypassPermissions mode.
+
 STEP 1 - IMPLEMENT:
 - Read the plan's Overview and Context sections to understand the work
 - Implement ALL items in the current Task section (all [ ] checkboxes under it)

@@ -52,3 +52,7 @@ For each finding:
 - Effort: trivial/small/medium/large
 
 Report problems only - no positive observations.
+
+## Shell Verification
+
+When running shell verification: use absolute paths (/tmp/claude/...), not $TMPDIR or other shell variables. Run pipeline stages as separate Bash calls instead of one compound &&-chain. This avoids permission prompts that block bypassPermissions mode.

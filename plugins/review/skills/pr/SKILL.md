@@ -285,6 +285,8 @@ prompt: |
 
   **IMPORTANT: Do NOT clean up the worktree.** The main conversation handles cleanup after all review phases complete.
 
+  **Shell verification rules:** use absolute paths (`/tmp/claude/...`), not `$TMPDIR` or other shell variables. Run pipeline stages as separate Bash calls instead of one compound `&&`-chain. This avoids permission prompts that block bypassPermissions mode.
+
   **Return a structured report with these sections:**
   - **Functionality**: 3-5 sentence explanation of what the PR does
   - **Key decisions**: notable implementation choices

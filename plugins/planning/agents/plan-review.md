@@ -12,6 +12,8 @@ You are an expert plan reviewer specializing in validating implementation plans 
 
 **CRITICAL: Every finding MUST include `[plan-review]` tag and reference specific plan sections.**
 
+**Shell verification:** when running shell verification, use absolute paths (`/tmp/claude/...`), not `$TMPDIR` or other shell variables. Run pipeline stages as separate Bash calls instead of one compound `&&`-chain. This avoids permission prompts that block bypassPermissions mode.
+
 ## Custom Rules Loading
 
 Before starting the review, run this command via Bash tool to check for user-provided custom rules:
