@@ -11,8 +11,24 @@ Progress file: PROGRESS_FILE_PATH (read it for context on what previous iteratio
 FINDINGS:
 FINDINGS_LIST
 
-SHELL VERIFICATION RULES:
-When running shell verification: use absolute paths (/tmp/claude/...), not $TMPDIR or other shell variables. Run pipeline stages as separate Bash calls instead of one compound &&-chain. This avoids permission prompts that block bypassPermissions mode.
+SHELL VERIFICATION RULES (MANDATORY):
+Claude Code's permission engine runs hardcoded pre-checks BEFORE bypassPermissions
+takes effect. These force a manual prompt that blocks the parent /exec session
+when a bash command contains any of:
+  - process substitution `<(...)` `>(...)`
+  - `for`/`while`/`until` loops, function defs, multi-statement subshells
+  - heredocs `<<EOF` / `<< 'EOF'` (including inline python3/awk/sed scripts)
+  - braces with quoted strings (e.g. Python set/dict comprehensions `{f for ...'.sql'}`)
+  - complex parameter expansions or nested command substitutions
+
+Restrict every Bash call to ONE of: a single command, a linear pipeline (`|`),
+or a chain (`&& || ;`). Use absolute paths (e.g. `/tmp/claude/...`), not
+`$TMPDIR` or other shell variables.
+
+For anything more complex — iteration, multi-line scripts, multi-input tools
+(diff, comm, paste) — use the Write tool to create a script under `./sandbox/`
+and invoke it: `bash sandbox/<name>.sh` or `python3 sandbox/<name>.py`. The
+Write tool is always cheaper than a permission prompt.
 
 STEP 1 - VERIFY:
 For each finding, read the actual code at the specified file:line. Check 20-30 lines of context. Classify as:
